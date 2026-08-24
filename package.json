@@ -1,4 +1,6 @@
 {
+  "name": "milada-agiban-2026",
+  "type": "module",
   "devDependencies": {
     "sharp": "^0.35.3"
   }

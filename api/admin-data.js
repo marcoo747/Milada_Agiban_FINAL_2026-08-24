@@ -34,9 +34,8 @@ export default async function handler(req,res){
   const {sessionToken, action, payload={}} = req.body || {};
   if(!verifyToken(sessionToken)) return res.status(401).json({status:'error',message:'جلسة الأدمن غير صالحة'});
 
-  const GAS_URL=process.env.GAS_URL || '';
-  if(!GAS_URL || !process.env.GAS_TOKEN) return res.status(503).json({status:'error',message:'GAS_URL و GAS_TOKEN يجب ضبطهما في Environment Variables.'});
-  const GAS_TOKEN=process.env.GAS_TOKEN;
+  const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbyJawD3RVxXF4sWio0oUPaaJHOJO3YW5ZSQdc3q634ENMYkhedYVAMSUW13B_cvCIMK/exec';
+  const GAS_TOKEN = process.env.GAS_TOKEN || '';
   try{
     const body={...(payload||{}),action,token:GAS_TOKEN};
     const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),redirect:'follow'});

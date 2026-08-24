@@ -1,1 +1,7 @@
-{}
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/_api/gas", "destination": "/api/gas" },
+    { "source": "/api/gas/:match*", "destination": "/api/gas" }
+  ]
+}

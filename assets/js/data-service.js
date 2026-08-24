@@ -140,7 +140,18 @@ class DataService {
         // كبديل صامت لأن ذلك قد يجعل الواجهة تعرض بيانات قديمة بعد فشل API.
         structData.participants = [];
         try {
-            const liveItems = await this._fetchGASParticipants(this.getApiUrl());
+            let liveItems = null;
+            try {
+                liveItems = await this._fetchGASParticipants(this.getApiUrl());
+            } catch (proxyErr) {
+                console.warn('DataService: Proxy failed, trying DIRECT_GAS_URL...', proxyErr);
+                const directUrl = (window.YC_CONFIG && window.YC_CONFIG.DIRECT_GAS_URL) || '';
+                if (directUrl && directUrl !== this.getApiUrl()) {
+                    liveItems = await this._fetchGASParticipants(directUrl);
+                } else {
+                    throw proxyErr;
+                }
+            }
             if (!Array.isArray(liveItems)) throw new Error('استجابة المشاركين من Google Sheets غير صالحة');
             this._mergeGASIntoConference(structData, liveItems);
             structData._gasConnected = true;
@@ -160,16 +171,19 @@ class DataService {
     }
 
     static async _fetchSiteConfig() {
-        const proxyUrl = this.PROXY_URL;
         const directUrl = (window.YC_CONFIG && window.YC_CONFIG.DIRECT_GAS_URL) || '';
-        const target = this._isGitHubPages() ? directUrl : this.getApiUrl();
-        if (!target) return {};
-        const sep = target.includes('?') ? '&' : '?';
-        const res = await fetch(target + sep + 'action=getSiteConfig', { method:'GET', cache:'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const json = await res.json();
-        if (json && json.status === 'success') return json.data || {};
-        throw new Error(json?.message || 'تعذر قراءة إعدادات الموقع');
+        const apiUrl = this.getApiUrl();
+        const targets = this._isGitHubPages() ? [directUrl] : [apiUrl, directUrl].filter(Boolean);
+        for (const target of targets) {
+            try {
+                const sep = target.includes('?') ? '&' : '?';
+                const res = await fetch(target + sep + 'action=getSiteConfig', { method:'GET', cache:'no-store' });
+                if (!res.ok) continue;
+                const json = await res.json();
+                if (json && json.status === 'success') return json.data || {};
+            } catch (e) {}
+        }
+        return {};
     }
 
     static async _fetchGASParticipants(url) {
@@ -255,20 +269,29 @@ class DataService {
     static async getScorebook() {
         const apiUrl = this.getApiUrl();
         const directUrl = (window.YC_CONFIG && window.YC_CONFIG.DIRECT_GAS_URL) || '';
-        const target = this._isGitHubPages() ? directUrl : apiUrl;
-        if (!target) throw new Error('لا يوجد مسار API لسجل الدرجات');
+        const targets = this._isGitHubPages() ? [directUrl] : [apiUrl, directUrl].filter(Boolean);
 
-        const sep = target.includes('?') ? '&' : '?';
-        const res = await fetch(target + sep + 'action=getScorebook', {
-            method:'GET',
-            cache:'no-store'
-        });
-        let json = null;
-        try { json = await res.json(); } catch { throw new Error('استجابة غير صالحة من API الدرجات'); }
-        if (!res.ok || json?.status !== 'success') {
-            throw new Error(json?.message || `فشل تحميل سجل الدرجات (HTTP ${res.status})`);
+        let lastErr = null;
+        for (const target of targets) {
+            try {
+                const sep = target.includes('?') ? '&' : '?';
+                const res = await fetch(target + sep + 'action=getScorebook', {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                let json = null;
+                try { json = await res.json(); } catch { throw new Error('استجابة غير صالحة من API الدرجات'); }
+                if (json && json.status === 'success') {
+                    return json.data || { gameScores: [], individualScores: [], config: {} };
+                }
+                throw new Error(json?.message || `فشل تحميل سجل الدرجات (HTTP ${res.status})`);
+            } catch (err) {
+                lastErr = err;
+                console.warn('DataService.getScorebook failed on target:', target, err);
+            }
         }
-        return json.data || {gameScores:[],individualScores:[],config:{}};
+        throw lastErr || new Error('تعذر تحميل سجل الدرجات');
     }
 
     static async sendToGAS(payload) {
@@ -276,9 +299,6 @@ class DataService {
         const directUrl = (window.YC_CONFIG && window.YC_CONFIG.DIRECT_GAS_URL) || '';
 
         // نُزيل التوكن من الـ payload — الـ Proxy يُضيفه من السيرفر
-        // على GitHub Pages فقط: لا توكن (GAS يتحقق من Origin)
-        // لا نرسل GAS_TOKEN من المتصفح. للعمليات الحساسة نرسل فقط Session
-        // الأدمن الموقعة من السيرفر؛ /api/gas يتحقق منها قبل إضافة GAS_TOKEN.
         const { token: _removed, ...cleanPayload } = payload;
         const action = String(cleanPayload.action || '').trim();
         const publicActions = new Set([
@@ -295,7 +315,7 @@ class DataService {
 
         this.invalidateCache();
 
-        // 1. على Vercel / Netlify: نستخدم الـ Proxy دائماً
+        // 1. على Vercel / Netlify: نستخدم الـ Proxy أولاً
         if (!this._isGitHubPages()) {
             try {
                 const res = await fetch(proxyUrl, {
@@ -303,38 +323,35 @@ class DataService {
                     headers: { 'Content-Type': 'application/json' },
                     body   : body
                 });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const result = await res.json().catch(() => null);
-                if (!result) return { status:'error', message:'استجابة غير صالحة من API' };
-                if (!res.ok || result.status === 'error') {
-                    return { status:'error', message:result.message || `HTTP ${res.status}`, ...result };
+                if (res.ok) {
+                    const result = await res.json().catch(() => null);
+                    if (result && result.status === 'success') return result;
                 }
-                return result;
             } catch (err) {
-                console.error('DataService.sendToGAS Proxy failed:', err);
+                console.warn('DataService.sendToGAS Proxy failed, trying Direct URL...', err);
+            }
+        }
+
+        // 2. Direct URL fallback
+        if (directUrl) {
+            try {
+                const res = await fetch(directUrl, {
+                    method  : 'POST',
+                    mode    : 'cors',
+                    redirect: 'follow',
+                    // text/plain لتجنب CORS Preflight (OPTIONS request) مع GAS
+                    headers : { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body    : body
+                });
+                const result = await res.json().catch(() => ({ status: 'success' }));
+                return { status: 'success', ...result };
+            } catch (err) {
+                console.error('DataService.sendToGAS Direct URL failed:', err);
                 return { status: 'error', message: err.toString() };
             }
         }
 
-        // 2. على GitHub Pages / localhost: Direct URL مع cors للكتابة
-        if (!directUrl) {
-            return { status: 'error', message: 'لا يوجد رابط GAS مضبوط' };
-        }
-        try {
-            const res = await fetch(directUrl, {
-                method  : 'POST',
-                mode    : 'cors',
-                redirect: 'follow',
-                // text/plain لتجنب CORS Preflight (OPTIONS request) مع GAS
-                headers : { 'Content-Type': 'text/plain;charset=utf-8' },
-                body    : body
-            });
-            const result = await res.json().catch(() => ({ status: 'success' }));
-            return { status: 'success', ...result };
-        } catch (err) {
-            console.error('DataService.sendToGAS Direct URL failed:', err);
-            return { status: 'error', message: err.toString() };
-        }
+        return { status: 'error', message: 'لا يوجد رابط GAS مضبوط' };
     }
 
     /* ──────────────────────────────────────────────────────────
@@ -412,15 +429,20 @@ class DataService {
     }
 
     static async _loadLocalJSON() {
-        // يجلب فقط البنية الثابتة (أتوبيسات، غرف، برنامج، مجموعات) — بدون مشتركين
-        // نستخدم timestamp مُقرَّب لـ 5 دقائق لتمكين كاش المتصفح وتجنب طلب شبكة في كل تحميل
         const prefix    = location.pathname.includes('/pages/') ? '../' : '';
         const url       = prefix + 'assets/data/conference-data.json';
-        const cacheKey  = Math.floor(Date.now() / (5 * 60 * 1000)); // يتغير كل 5 دقائق
-        const res       = await fetch(`${url}?v=${cacheKey}`);
-        if (!res.ok) throw new Error('فشل جلب ملف البيانات: ' + res.status);
+        const cacheKey  = Math.floor(Date.now() / (5 * 60 * 1000));
+        let res;
+        try {
+            res = await fetch(`${url}?v=${cacheKey}`);
+        } catch(e) {}
+        if (!res || !res.ok) {
+            try {
+                res = await fetch(`/assets/data/conference-data.json?v=${cacheKey}`);
+            } catch(e) {}
+        }
+        if (!res || !res.ok) throw new Error('فشل جلب ملف البيانات: ' + (res ? res.status : 'Network error'));
         const data = await res.json();
-        // تفريغ المشتركين المحليين — Google Sheets هو المصدر الوحيد للمشتركين
         data.participants = [];
         return JSON.parse(JSON.stringify(data));
     }

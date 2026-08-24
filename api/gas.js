@@ -50,10 +50,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: 'error', message: 'Method not allowed' });
   }
 
-  const GAS_URL = process.env.GAS_URL;
-  if (!GAS_URL) {
-    return res.status(503).json({ status: 'error', message: 'GAS_URL environment variable is not set in Vercel dashboard.' });
-  }
+  const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbyJawD3RVxXF4sWio0oUPaaJHOJO3YW5ZSQdc3q634ENMYkhedYVAMSUW13B_cvCIMK/exec';
 
   try {
     let body = {};
@@ -79,10 +76,7 @@ export default async function handler(req, res) {
       // Never trust client-supplied session/GAS tokens.
       const { token: _ignored, sessionToken: _session, ...safeBody } = body;
       if (sensitiveIndividual) safeBody.adminAuthorized = true;
-      if (!process.env.GAS_TOKEN) {
-        return res.status(503).json({status:'error',message:'GAS_TOKEN غير مضبوط في Vercel Environment Variables.'});
-      }
-      safeBody.token = process.env.GAS_TOKEN;
+      safeBody.token = process.env.GAS_TOKEN || '';
       body = safeBody;
     }
 
