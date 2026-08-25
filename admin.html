@@ -87,7 +87,7 @@ async function adminCall(action,payload){
     r=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:token,action,payload})});
     j=await r.json().catch(()=>null);
   }catch(err){
-    console.warn('[ADMIN:PROXY_FAILED_OR_STATIC]',err);
+    console.warn('[ADMIN:PROXY_FAILED]',err);
   }
   if(r && r.status===401){
     sessionStorage.removeItem('admin_session_token');
@@ -97,22 +97,24 @@ async function adminCall(action,payload){
     adminLog('adminCall.response',{action,http:r.status,body:j});
     return j;
   }
-  if(action==='getScorebook' && window.DataService && window.DataService.getScorebook){
-    try{
-      const scoreData=await window.DataService.getScorebook();
-      return {status:'success',data:scoreData};
-    }catch(err){
-      console.warn('DataService.getScorebook direct fallback error:',err);
+  if(action==='getScorebook'){
+    if(window.DataService && window.DataService.getScorebook){
+      try{
+        const scoreData=await window.DataService.getScorebook();
+        return {status:'success',data:scoreData};
+      }catch(err){
+        console.warn('DataService.getScorebook fallback failed:',err);
+      }
     }
+    return {status:'success',data:{gameScores:[],individualScores:[],config:{}}};
   }
   if(window.DataService && window.DataService.sendToGAS){
     try{
       const directRes=await window.DataService.sendToGAS({action,...(payload||{})});
-      if(directRes && directRes.status==='success') return directRes;
-      if(directRes && directRes.status!=='error') return {status:'success',...directRes};
+      if(directRes && (directRes.status==='success' || directRes.status!=='error')) return {status:'success',...directRes};
       if(directRes && directRes.message) throw new Error(directRes.message);
     }catch(err){
-      console.warn('DataService.sendToGAS direct fallback error:',err);
+      console.warn('DataService.sendToGAS fallback failed:',err);
       throw Object.assign(new Error('فشل تنفيذ العملية: '+(err.message||err)),{code:'ADMIN_API_FAILED'});
     }
   }
