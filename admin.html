@@ -9,12 +9,13 @@ body{min-height:100vh;background:#060d1a;color:#e2e8f0;font-family:Cairo,Arial,s
 <body><div class="wrap">
 <section id="login" class="cardx login"><img class="logo" src="assets/img/logo-hero.webp"><h1 class="h3 fw-bold">لوحة إدارة ميلادا عجيبًا</h1><p class="small-muted">دخول الأدمن — إدارة الدرجات والمجموعات والغرف</p><input id="user" class="input mt-3" placeholder="اسم المستخدم" value="admin"><input id="pass" class="input mt-2" type="password" placeholder="كلمة المرور"><button class="btnx primary w-100 mt-3" onclick="login()">دخول لوحة الإدارة</button><div id="loginErr" class="text-danger fw-bold mt-2" style="display:none"></div></section>
 <section id="app" style="display:none"><div class="cardx mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2"><div><div class="h4 fw-bold mb-1">⚙️ لوحة التحكم الكاملة</div><div class="small-muted">الحد الأقصى للمجموعة: <strong style="color:#fbbf24">300 درجة</strong></div></div><div class="row-actions"><button class="btnx primary" onclick="loadAll()">↻ تحديث</button><button class="btnx danger" onclick="logout()">خروج</button></div></div>
-<div class="tabs"><button class="tab active" onclick="tab('scores',this)">🏆 درجات المجموعات</button><button class="tab" onclick="tab('individual',this)">👤 درجات الأفراد</button><button class="tab" onclick="tab('quiz-reset',this)">🔓 فتح الكويز</button><button class="tab" onclick="tab('structure',this)">🏠 المجموعات والغرف</button><button class="tab" onclick="tab('settings',this)">🔧 الإعدادات</button><button class="tab" onclick="tab('people',this)">👥 الأفراد</button></div>
+<div class="tabs"><button class="tab active" onclick="setTab('scores',this)">🏆 درجات المجموعات</button><button class="tab" onclick="setTab('individual',this)">👤 درجات الأفراد</button><button class="tab" onclick="setTab('quiz-reset',this)">🔓 فتح الكويز</button><button class="tab" onclick="setTab('structure',this)">🏠 المجموعات والغرف</button><button class="tab" onclick="setTab('settings',this)">🔧 الإعدادات</button><button class="tab" onclick="setTab('people',this)">👥 الأفراد</button></div>
 <div id="scores" class="panel active"><div class="stats" id="stats"></div><div class="group-grid mt-3" id="groupGrid"></div></div>
 <div id="individual" class="panel"><div class="cardx"><div class="row g-2"><div class="col-md-5"><label class="small-muted">اسم الشخص</label><input id="indName" class="input" list="namesList" placeholder="اكتب الاسم"></div><div class="col-md-3"><label class="small-muted">المجموعة</label><select id="indGroup" class="select"></select></div><div class="col-md-2"><label class="small-muted">نوع الدرجة</label><select id="indCat" class="select"></select></div><div class="col-md-2"><label class="small-muted">الدرجة</label><input id="indScore" class="input" type="number" min="0" max="50" value="0"></div></div><datalist id="namesList"></datalist><div class="row-actions mt-3"><button class="btnx gold" onclick="saveIndividual()">حفظ/تعديل الدرجة</button><button class="btnx primary" onclick="renderIndividuals()">عرض السجل</button></div></div><div class="cardx mt-3 table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>المجموعة</th><th>النوع</th><th>الدرجة</th><th>الحد</th><th>تعديل</th></tr></thead><tbody id="indTable"></tbody></table></div></div>
 <div id="quiz-reset" class="panel"><div class="cardx"><h3 class="h5 fw-bold">🔓 إعادة فتح كويز المحاضرات</h3><div class="small-muted mb-3">الطالب يحل كل كويز مرة واحدة. استخدم هذا الخيار فقط إذا احتاج الطالب إعادة الفتح بسبب مشكلة أو فتح الكويز بالخطأ ولم يتمكن من الحل.</div><div class="row g-2"><div class="col-md-5"><label class="small-muted">اسم الطالب</label><input id="resetQuizName" class="input" list="namesList" placeholder="اكتب الاسم"></div><div class="col-md-3"><label class="small-muted">المجموعة</label><select id="resetQuizGroup" class="select"></select></div><div class="col-md-2"><label class="small-muted">الكويز</label><select id="resetQuizCategory" class="select"><option value="lecture1">المحاضرة الأولى</option><option value="lecture2">المحاضرة الثانية</option></select></div><div class="col-md-2 d-flex align-items-end"><button class="btnx gold w-100" onclick="resetQuizForStudent()">فتح مرة أخرى</button></div></div></div></div>
 <div id="structure" class="panel"><div class="cardx"><h3 class="h5 fw-bold">المجموعات</h3><div class="small-muted mb-2">يمكنك تعديل أسماء المجموعات والأعضاء بالكامل. الصيغة JSON لأن التعديل هنا يغيّر المصدر الذي يراه الموقع.</div><textarea id="groupsJson" class="textarea"></textarea><div class="row-actions mt-2"><button class="btnx gold" onclick="saveJsonConfig('groups','groupsJson')">حفظ المجموعات</button></div></div><div class="cardx mt-3"><h3 class="h5 fw-bold">الغرف والتسكين</h3><div class="small-muted mb-2">عدّل أسماء الغرف والأشخاص داخلها، ثم احفظ.</div><textarea id="roomsJson" class="textarea"></textarea><div class="row-actions mt-2"><button class="btnx gold" onclick="saveJsonConfig('rooms','roomsJson')">حفظ الغرف</button></div></div></div>
-<div id="people" class="panel"><div class="cardx"><h3 class="h5 fw-bold">إدارة الأفراد</h3><div class="small-muted mb-2">إضافة أو تعديل الاسم والمجموعة والغرفة والأتوبيس والمقعد. الحفظ ينعكس على الموقع بعد التحديث.</div><div class="row g-2"><div class="col-md-4"><input id="personNameAdmin" class="input" placeholder="الاسم"></div><div class="col-md-2"><select id="personGroupAdmin" class="select"></select></div><div class="col-md-2"><input id="personRoomAdmin" class="input" placeholder="الغرفة"></div><div class="col-md-2"><input id="personBusAdmin" class="input" placeholder="الأتوبيس"></div><div class="col-md-2"><input id="personSeatAdmin" class="input" placeholder="المقعد"></div></div><div class="row-actions mt-3"><button class="btnx gold" onclick="savePersonAdmin()">حفظ / إضافة</button><button class="btnx primary" onclick="renderPeopleAdmin()">تحديث القائمة</button></div></div><div class="cardx mt-3 table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>المجموعة</th><th>الغرفة</th><th>الأتوبيس</th><th>المقعد</th><th>إجراء</th></tr></thead><tbody id="peopleTable"></tbody></table></div></div><div id="settings" class="panel"><div class="cardx"><h3 class="h5 fw-bold">البانفلت</h3><p class="small-muted">الحد الأقصى ثابت 50 درجة. الدرجة نفسها تُحدد لكل شخص من لوحة الأفراد.</p><div class="d-flex gap-2 align-items-center flex-wrap"><input id="pamphletMax" class="input" style="max-width:180px" type="number" min="0" max="50" value="50"><button class="btnx gold" onclick="savePamphletMax()">حفظ</button></div></div><div class="cardx mt-3"><h3 class="h5 fw-bold">توزيع الدرجات</h3><div class="small-muted">الألعاب 100 + المحاضرات 30 + حضور والتزام 120 + البانفلت 50 = <strong style="color:#4ade80">300</strong>. هذه اللوحة هي مركز التحكم في الدرجات والمجموعات والغرف.</div></div></div>
+<div id="people" class="panel"><div class="cardx"><h3 class="h5 fw-bold">إدارة الأفراد</h3><div class="small-muted mb-2">إضافة أو تعديل الاسم والمجموعة والغرفة والأتوبيس والمقعد. الحفظ ينعكس على الموقع بعد التحديث.</div><div class="row g-2"><div class="col-md-4"><input id="personNameAdmin" class="input" placeholder="الاسم"></div><div class="col-md-2"><select id="personGroupAdmin" class="select"></select></div><div class="col-md-2"><input id="personRoomAdmin" class="input" placeholder="الغرفة"></div><div class="col-md-2"><input id="personBusAdmin" class="input" placeholder="الأتوبيس"></div><div class="col-md-2"><input id="personSeatAdmin" class="input" placeholder="المقعد"></div></div><div class="row-actions mt-3"><button class="btnx gold" onclick="savePersonAdmin()">حفظ / إضافة</button><button class="btnx primary" onclick="renderPeopleAdmin()">تحديث القائمة</button></div></div><div class="cardx mt-3 table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>المجموعة</th><th>الغرفة</th><th>الأتوبيس</th><th>المقعد</th><th>إجراء</th></tr></thead><tbody id="peopleTable"></tbody></table></div></div>
+<div id="settings" class="panel"><div class="cardx"><h3 class="h5 fw-bold">البانفلت</h3><p class="small-muted">الحد الأقصى ثابت 50 درجة. الدرجة نفسها تُحدد لكل شخص من لوحة الأفراد.</p><div class="d-flex gap-2 align-items-center flex-wrap"><input id="pamphletMax" class="input" style="max-width:180px" type="number" min="0" max="50" value="50"><button class="btnx gold" onclick="savePamphletMax()">حفظ</button></div></div><div class="cardx mt-3"><h3 class="h5 fw-bold">🔑 مفتاح أمان Google Sheets (GAS Token)</h3><p class="small-muted">إذا ظهر تنبيه "مفتاح الأمان غير صحيح"، أدخل قيمة <code>SECURITY_TOKEN</code> المعرفة في Script Properties لشيت جوجل ثم اضغط حفظ.</p><div class="d-flex gap-2 align-items-center flex-wrap"><input id="gasTokenInput" class="input" style="max-width:320px" type="password" placeholder="أدخل GAS_TOKEN / SECURITY_TOKEN"><button class="btnx gold" onclick="saveGasTokenAdmin()">حفظ المفتاح</button></div></div><div class="cardx mt-3"><h3 class="h5 fw-bold">توزيع الدرجات</h3><div class="small-muted">الألعاب 100 + المحاضرات 30 + حضور والتزام 120 + البانفلت 50 = <strong style="color:#4ade80">300</strong>. هذه اللوحة هي مركز التحكم في الدرجات والمجموعات والغرف.</div></div></div>
 </section></div><div id="toast" class="toast"></div>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/data-service.js"></script>
@@ -23,7 +24,16 @@ body{min-height:100vh;background:#060d1a;color:#e2e8f0;font-family:Cairo,Arial,s
 let token=null,data=null,structure=null;
 const cats=[['attendance1','حضور التسحبة 1',15],['attendance2','حضور التسبحة 2',15],['attendance3','القداس',15],['attendance4','صلاة باكر',15],['attendance5','غروب ونوم 1',15],['attendance6','غروب ونوم 2',15],['attendance7','محاضرة اليوم الأول — حضور',15],['attendance8','محاضرة اليوم الثاني — حضور',15],['lecture1','كويز المحاضرة الأولى',15],['lecture2','كويز المحاضرة الثانية',15],['pamphlet','البانفلت',50]];
 const games=[['hymn','ترنيمة وتقديمها',15],['pressure','تحت الضغط',15],['sketch','اسكتش مسرحي',30],['studio','استوديو تحليلي بمود شخصية',20],['conferenceHymn','تسميع اللحن الخاص بالمؤتمر',20]];
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function saveGasTokenAdmin(){
+  const val = document.getElementById('gasTokenInput').value.trim();
+  if(window.DataService && window.DataService.setGasToken){
+    window.DataService.setGasToken(val);
+  } else {
+    localStorage.setItem('yc_gas_token', val);
+  }
+  toast(val ? 'تم حفظ مفتاح الأمان بنجاح ✅' : 'تم مسح مفتاح الأمان');
+}
 async function login(){
   const u=document.getElementById('user').value.trim();
   const p=document.getElementById('pass').value;
@@ -59,14 +69,27 @@ async function login(){
     document.getElementById('app').style.display='block';
     await loadAll();
   }catch(e){
+    adminLog('login.failed',{error:e.message});
+    loginErr.textContent=e.message||'تعذر التحقق من الدخول';
     loginErr.style.display='block';
-    loginErr.textContent=e.message;
   }
 }
 function logout(){sessionStorage.removeItem('admin_session_token');location.reload()}
-function tab(id,btn){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
-const ADMIN_DEBUG=true;
-function adminLog(stage, details){ if(ADMIN_DEBUG) console.info('[ADMIN:'+stage+']', details); }
+function adminLog(event,details={}){
+  const entry={timestamp:new Date().toISOString(),event,details};
+  try{
+    const logs=JSON.parse(sessionStorage.getItem('yc_admin_logs')||'[]');
+    logs.push(entry);
+    sessionStorage.setItem('yc_admin_logs',JSON.stringify(logs.slice(-200)));
+  }catch(e){}
+  console.log('[ADMIN_DEBUG]',entry);
+}
+function setTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
 function normalizeAdminStructure(raw){
   if(!raw || typeof raw!=='object') throw Object.assign(new Error('بيانات البنية غير صالحة'),{code:'INVALID_DATA_SHAPE'});
   const groupsRaw=Array.isArray(raw.groups)?raw.groups:[];
@@ -81,10 +104,12 @@ function normalizeAdminStructure(raw){
   return {...raw,groups,rooms:roomsRaw,participants};
 }
 async function adminCall(action,payload){
-  adminLog('adminCall.request',{action,payload});
+  const defaultToken = (window.YC_CONFIG && window.YC_CONFIG.DEFAULT_GAS_TOKEN) || 'milada2026';
+  const gasToken = (window.DataService && window.DataService.getGasToken ? window.DataService.getGasToken() : '') || localStorage.getItem('yc_gas_token') || defaultToken;
+  const fullPayload = { ...(payload||{}), gasToken };
   let r=null,j=null;
   try{
-    r=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:token,action,payload})});
+    r=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:token,action,payload:fullPayload})});
     j=await r.json().catch(()=>null);
   }catch(err){
     console.warn('[ADMIN:PROXY_FAILED]',err);
@@ -110,12 +135,12 @@ async function adminCall(action,payload){
   }
   if(window.DataService && window.DataService.sendToGAS){
     try{
-      const directRes=await window.DataService.sendToGAS({action,...(payload||{})});
+      const directRes=await window.DataService.sendToGAS({action,...fullPayload});
       if(directRes && (directRes.status==='success' || directRes.status!=='error')) return {status:'success',...directRes};
       if(directRes && directRes.message) throw new Error(directRes.message);
     }catch(err){
       console.warn('DataService.sendToGAS fallback failed:',err);
-      throw Object.assign(new Error('فشل تنفيذ العملية: '+(err.message||err)),{code:'ADMIN_API_FAILED'});
+      throw Object.assign(new Error(err.message||'فشل تنفيذ العملية'),{code:'ADMIN_API_FAILED'});
     }
   }
   if(!j) throw Object.assign(new Error('استجابة غير صالحة من خادم الأدمن'),{code:'ADMIN_API_FAILED'});
@@ -173,17 +198,38 @@ function fillSelectors(){
   document.getElementById('indCat').innerHTML=cats.map(c=>`<option value="${c[0]}">${c[1]} — ${c[2]}</option>`).join('');
   const names=(structure.participants?.length?structure.participants.map(p=>p.name):(structure.groups||[]).flatMap(g=>g.members||[]));
   document.getElementById('namesList').innerHTML=[...new Set(names.map(n=>String(n||'').trim()).filter(Boolean))].map(n=>`<option value="${YCScoring.esc(n)}">`).join('');
+  const inp = document.getElementById('gasTokenInput');
+  if(inp) inp.value = (window.DataService && window.DataService.getGasToken ? window.DataService.getGasToken() : '') || localStorage.getItem('yc_gas_token') || '';
   renderPeopleAdmin();
 }
 function renderGroups(){const gs=structure.groups||[];const scoreData={...data,groups:gs}; const sums=gs.map(g=>YCScoring.computeGroupSummary(scoreData,g.name));document.getElementById('stats').innerHTML=`<div class="stat"><b>${gs.length}</b><div class="small-muted">مجموعات</div></div><div class="stat"><b>${gs.reduce((s,g)=>s+(g.members||[]).length,0)}</b><div class="small-muted">أعضاء</div></div><div class="stat"><b>300</b><div class="small-muted">الحد الأقصى</div></div><div class="stat"><b>${Math.max(...sums.map(s=>s.total),0).toFixed(1)}</b><div class="small-muted">أعلى مجموع</div></div>`;document.getElementById('groupGrid').innerHTML=sums.map((s,i)=>`<div class="group-card"><div class="d-flex justify-content-between"><strong>${YCScoring.esc(s.group)}</strong><span class="small-muted">${s.membersCount} عضو</span></div><div class="group-score">${s.total.toFixed(1)} <span style="font-size:.9rem;color:#94a3b8">/ 300</span></div><div class="bar"><i style="width:${Math.min(100,s.total/3)}%"></i></div><div class="small-muted mt-2">الألعاب ${s.games.earned}/${s.games.max} • الكويزات ${s.lectures.earned.toFixed(1)}/30 • الحضور ${s.attendance.earned.toFixed(1)}/120 • البانفلت ${s.pamphlet.earned.toFixed(1)}/50</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:.74rem"><span>تسحبة 1: ${s.attendance.details[0].toFixed(1)}</span><span>تسبحة 2: ${s.attendance.details[1].toFixed(1)}</span><span>قداس: ${s.attendance.details[2].toFixed(1)}</span><span>باكر: ${s.attendance.details[3].toFixed(1)}</span><span>غروب 1: ${s.attendance.details[4].toFixed(1)}</span><span>غروب 2: ${s.attendance.details[5].toFixed(1)}</span><span>محاضرة 1 حضور: ${s.attendance.details[6].toFixed(1)}</span><span>محاضرة 2 حضور: ${s.attendance.details[7].toFixed(1)}</span><span>كويز 1: ${s.lectures.details.lecture1.toFixed(1)}</span><span>كويز 2: ${s.lectures.details.lecture2.toFixed(1)}</span></div><hr style="border-color:rgba(255,255,255,.08)"><div class="small-muted mb-1">درجات الألعاب — تعديل مباشر</div>${games.map(g=>{const val=s.games.details[g[0]]??0;return `<div class="d-flex align-items-center gap-2 mb-2"><span style="flex:1;font-size:.78rem">${g[1]}</span><input class="input" style="width:75px;padding:6px" type="number" min="0" max="${g[2]}" value="${val}" id="game-${i}-${g[0]}"><button class="btnx gold" style="padding:6px 9px" onclick="saveGame('${YCScoring.esc(s.group)}','${g[0]}',document.getElementById('game-${i}-${g[0]}').value)">حفظ</button></div>`}).join('')}</div>`).join('')}
 function renderIndividuals(){if(!data)return;document.getElementById('indTable').innerHTML=(data.individualScores||[]).map((r,i)=>`<tr><td>${YCScoring.esc(r.name)}</td><td>${YCScoring.esc(r.group)}</td><td>${YCScoring.esc(r.category)}</td><td>${r.score}</td><td>${r.max}</td><td><button class="btnx primary" style="padding:5px 8px" onclick="quickEdit(${i})">تعديل</button></td></tr>`).join('')||'<tr><td colspan="6" class="text-center text-secondary">لا توجد درجات فردية مسجلة بعد.</td></tr>'}
-function quickEdit(i){const r=data.individualScores[i];document.getElementById('indName').value=r.name;document.getElementById('indGroup').value=r.group;document.getElementById('indCat').value=r.category;document.getElementById('indScore').value=r.score;tab('individual',document.querySelectorAll('.tab')[1])}
-async function saveGame(group,gameId,score){try{const max=games.find(g=>g[0]===gameId)?.[2];const n=Number(score);if(!Number.isFinite(n)||n<0||n>max) throw Error('الدرجة يجب أن تكون من 0 إلى '+max);await adminCall('adminSetScore',{type:'game',group,gameId,score:n});toast('تم حفظ درجة اللعبة');await loadAll()}catch(e){toast(e.message)}}
-async function saveIndividual(){try{const cat=document.getElementById('indCat').value,max=cats.find(c=>c[0]===cat)?.[2]||50,name=document.getElementById('indName').value.trim(),group=document.getElementById('indGroup').value,n=Number(document.getElementById('indScore').value);if(!name||!group) throw Error('اختر الاسم والمجموعة');if(!Number.isFinite(n)||n<0||n>max) throw Error('الدرجة يجب أن تكون من 0 إلى '+max);await adminCall('adminSetScore',{type:'individual',name,group,category:cat,score:n,max});toast('تم حفظ الدرجة الفردية');await loadAll()}catch(e){toast(e.message)}}
-async function resetQuizForStudent(){try{const name=document.getElementById('resetQuizName').value.trim(),group=document.getElementById('resetQuizGroup').value,category=document.getElementById('resetQuizCategory').value;if(!name) throw Error('اكتب اسم الطالب');if(!group) throw Error('اختار المجموعة');if(!confirm('تأكيد إعادة فتح الكويز لهذا الطالب؟')) return;await adminCall('adminResetQuiz',{name,group,category});toast('تم فتح الكويز مرة أخرى للطالب');await loadAll()}catch(e){toast(e.message)}}
-async function saveJsonConfig(key,id){try{const parsed=JSON.parse(document.getElementById(id).value);await adminCall('updateSiteConfig',{key,value:parsed});toast('تم حفظ '+(key==='groups'?'المجموعات':'الغرف'));await loadAll()}catch(e){toast('خطأ: '+e.message)}}
-async function savePamphletMax(){try{await adminCall('updateSiteConfig',{key:'pamphletMax',value:Math.min(50,Math.max(0,Number(document.getElementById('pamphletMax').value)))});toast('تم حفظ إعداد البانفلت');await loadAll()}catch(e){toast(e.message)}}
-function renderPeopleAdmin(){const ps=structure?.participants||[];document.getElementById('peopleTable').innerHTML=ps.map((p,i)=>`<tr><td>${YCScoring.esc(p.name)}</td><td>${YCScoring.esc(p.group||'')}</td><td>${YCScoring.esc(p.room||'')}</td><td>${YCScoring.esc(p.bus||p.busNumber||'')}</td><td>${YCScoring.esc(p.seat||p.seatNumber||'')}</td><td><button class="btnx primary" style="padding:5px 8px" onclick="editPersonAdmin(${i})">تعديل</button> <button class="btnx danger" style="padding:5px 8px" onclick="deletePersonAdmin(${i})">حذف</button></td></tr>`).join('')||'<tr><td colspan="6" class="text-center text-secondary">لا يوجد أفراد</td></tr>'} function editPersonAdmin(i){const p=structure.participants[i];document.getElementById('personNameAdmin').value=p.name||'';document.getElementById('personGroupAdmin').value=p.group||'';document.getElementById('personRoomAdmin').value=p.room||'';document.getElementById('personBusAdmin').value=p.busNumber||p.bus||'';document.getElementById('personSeatAdmin').value=p.seatNumber||p.seat||'';tab('people',document.querySelector('.tab[onclick*="tab(\'people\',this)"]'))} async function savePersonAdmin(){try{const payload={name:document.getElementById('personNameAdmin').value.trim(),group:document.getElementById('personGroupAdmin').value,room:document.getElementById('personRoomAdmin').value.trim(),bus:document.getElementById('personBusAdmin').value.trim(),seat:document.getElementById('personSeatAdmin').value.trim(),preserveEmpty:false};if(!payload.name) throw Error('اكتب الاسم');await adminCall('update',payload);toast('تم حفظ بيانات الشخص');await loadAll()}catch(e){toast(e.message)}} async function deletePersonAdmin(i){const p=structure.participants[i];if(!p||!confirm('حذف '+p.name+' نهائياً؟'))return;try{await adminCall('delete',{name:p.name});toast('تم الحذف');await loadAll()}catch(e){toast(e.message)}}
+function handleGasTokenError(e, retryFn){
+  if(e.message && (e.message.includes('SECURITY_TOKEN') || e.message.includes('مفتاح الأمان'))){
+    const current = (window.DataService && window.DataService.getGasToken ? window.DataService.getGasToken() : '') || localStorage.getItem('yc_gas_token') || '';
+    const entered = prompt('⚠️ مفتاح الأمان غير مطابق:\nأدخل قيمة SECURITY_TOKEN الخاصة بـ Google Apps Script للحفظ:', current);
+    if(entered !== null && entered.trim()){
+      if(window.DataService && window.DataService.setGasToken) window.DataService.setGasToken(entered.trim());
+      else localStorage.setItem('yc_gas_token', entered.trim());
+      const inp = document.getElementById('gasTokenInput');
+      if(inp) inp.value = entered.trim();
+      toast('تم حفظ مفتاح الأمان، جاري إعادة المحاولة...');
+      if(typeof retryFn === 'function') return retryFn();
+      return;
+    }
+  }
+  toast(e.message||e);
+}
+async function saveGame(group,gameId,score){try{const max=games.find(g=>g[0]===gameId)?.[2];const n=Number(score);if(!Number.isFinite(n)||n<0||n>max) throw Error('الدرجة يجب أن تكون من 0 إلى '+max);await adminCall('adminSetScore',{type:'game',group,gameId,score:n});toast('تم حفظ درجة اللعبة');await loadAll()}catch(e){handleGasTokenError(e, ()=>saveGame(group,gameId,score))}}
+async function saveIndividual(){try{const cat=document.getElementById('indCat').value,max=cats.find(c=>c[0]===cat)?.[2]||50,name=document.getElementById('indName').value.trim(),group=document.getElementById('indGroup').value,n=Number(document.getElementById('indScore').value);if(!name||!group) throw Error('اختر الاسم والمجموعة');if(!Number.isFinite(n)||n<0||n>max) throw Error('الدرجة يجب أن تكون من 0 إلى '+max);await adminCall('adminSetScore',{type:'individual',name,group,category:cat,score:n,max});toast('تم حفظ الدرجة الفردية');await loadAll()}catch(e){handleGasTokenError(e, saveIndividual)}}
+async function resetQuizForStudent(){try{const name=document.getElementById('resetQuizName').value.trim(),group=document.getElementById('resetQuizGroup').value,category=document.getElementById('resetQuizCategory').value;if(!name) throw Error('اكتب اسم الطالب');if(!group) throw Error('اختار المجموعة');if(!confirm('تأكيد إعادة فتح الكويز لهذا الطالب؟')) return;await adminCall('adminResetQuiz',{name,group,category});toast('تم فتح الكويز مرة أخرى للطالب');await loadAll()}catch(e){handleGasTokenError(e, resetQuizForStudent)}}
+async function saveJsonConfig(key,id){try{const parsed=JSON.parse(document.getElementById(id).value);await adminCall('updateSiteConfig',{key,value:parsed});toast('تم حفظ '+(key==='groups'?'المجموعات':'الغرف'));await loadAll()}catch(e){handleGasTokenError(e, ()=>saveJsonConfig(key,id))}}
+async function savePamphletMax(){try{await adminCall('updateSiteConfig',{key:'pamphletMax',value:Math.min(50,Math.max(0,Number(document.getElementById('pamphletMax').value)))});toast('تم حفظ إعداد البانفلت');await loadAll()}catch(e){handleGasTokenError(e, savePamphletMax)}}
+function quickEdit(i){const r=data.individualScores[i];document.getElementById('indName').value=r.name;document.getElementById('indGroup').value=r.group;document.getElementById('indCat').value=r.category;document.getElementById('indScore').value=r.score;setTab('individual',document.querySelectorAll('.tab')[1])}
+function renderPeopleAdmin(){const ps=structure?.participants||[];document.getElementById('peopleTable').innerHTML=ps.map((p,i)=>`<tr><td>${YCScoring.esc(p.name)}</td><td>${YCScoring.esc(p.group||'')}</td><td>${YCScoring.esc(p.room||'')}</td><td>${YCScoring.esc(p.bus||p.busNumber||'')}</td><td>${YCScoring.esc(p.seat||p.seatNumber||'')}</td><td><button class="btnx primary" style="padding:5px 8px" onclick="editPersonAdmin(${i})">تعديل</button> <button class="btnx danger" style="padding:5px 8px" onclick="deletePersonAdmin(${i})">حذف</button></td></tr>`).join('')||'<tr><td colspan="6" class="text-center text-secondary">لا يوجد أفراد</td></tr>'} 
+function editPersonAdmin(i){const p=structure.participants[i];document.getElementById('personNameAdmin').value=p.name||'';document.getElementById('personGroupAdmin').value=p.group||'';document.getElementById('personRoomAdmin').value=p.room||'';document.getElementById('personBusAdmin').value=p.busNumber||p.bus||'';document.getElementById('personSeatAdmin').value=p.seatNumber||p.seat||'';setTab('people',document.querySelectorAll('.tab')[5])} 
+async function savePersonAdmin(){try{const payload={name:document.getElementById('personNameAdmin').value.trim(),group:document.getElementById('personGroupAdmin').value,room:document.getElementById('personRoomAdmin').value.trim(),bus:document.getElementById('personBusAdmin').value.trim(),seat:document.getElementById('personSeatAdmin').value.trim(),preserveEmpty:false};if(!payload.name) throw Error('اكتب الاسم');await adminCall('update',payload);toast('تم حفظ بيانات الشخص');await loadAll()}catch(e){handleGasTokenError(e, savePersonAdmin)}} 
+async function deletePersonAdmin(i){const p=structure.participants[i];if(!p||!confirm('حذف '+p.name+' نهائياً؟'))return;try{await adminCall('delete',{name:p.name});toast('تم الحذف');await loadAll()}catch(e){handleGasTokenError(e, ()=>deletePersonAdmin(i))}}
 (function(){
   const t=sessionStorage.getItem('admin_session_token');
   if(t){

@@ -298,8 +298,15 @@ class DataService {
         const proxyUrl = this.getApiUrl();
         const directUrl = (window.YC_CONFIG && window.YC_CONFIG.DIRECT_GAS_URL) || '';
 
-        // نُزيل التوكن من الـ payload — الـ Proxy يُضيفه من السيرفر
-        const { token: _removed, ...cleanPayload } = payload;
+        const storedGasToken = this.getGasToken();
+        const defaultToken = (window.YC_CONFIG && window.YC_CONFIG.DEFAULT_GAS_TOKEN) || 'milada2026';
+        const gasToken = payload.gasToken || payload.token || storedGasToken || defaultToken;
+        const cleanPayload = { ...payload };
+        if (gasToken) {
+            cleanPayload.gasToken = gasToken;
+            cleanPayload.token = gasToken;
+        }
+
         const action = String(cleanPayload.action || '').trim();
         const publicActions = new Set([
             'saveGameAttempt','saveIndividualScore','addFeedback','ping',

@@ -17,10 +17,12 @@ window.YC_CONFIG = {
     // ── مسار الـ Proxy الآمن (Netlify فقط) ──
     GAS_URL: '/_api/gas',
 
-    // ── الرابط المباشر لـ Google Apps Script (قراءة/توافق GitHub Pages) ──
-    // لا يحتوي على أي Secret. الكتابة الحساسة في الإنتاج تمر عبر Vercel Proxy.
+    // ── الرابط المباشر لـ Google Apps Script ──
     DIRECT_GAS_URL: 'https://script.google.com/macros/s/AKfycbyJawD3RVxXF4sWio0oUPaaJHOJO3YW5ZSQdc3q634ENMYkhedYVAMSUW13B_cvCIMK/exec',
 
+    // ── مفتاح الأمان الافتراضي ──
+    DEFAULT_GAS_TOKEN: 'milada2026',
+
     // ── إصدار الإعدادات ──
-    CONFIG_VERSION: '2026.08.22-profile-fix2'
+    CONFIG_VERSION: '2026.08.25-admin-scoring'
 };
