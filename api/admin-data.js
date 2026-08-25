@@ -34,7 +34,7 @@ export default async function handler(req,res){
   const {sessionToken, action, payload={}} = req.body || {};
   if(!verifyToken(sessionToken)) return res.status(401).json({status:'error',message:'جلسة الأدمن غير صالحة'});
 
-  const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbyJawD3RVxXF4sWio0oUPaaJHOJO3YW5ZSQdc3q634ENMYkhedYVAMSUW13B_cvCIMK/exec';
+  const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycby-1B6wiO4-jbK5jaXRBKmUr8OmOKzG9O9ESohlPm5bviDufCkNg3QTL1EFQ_WWEwuPTA/exec';
   const GAS_TOKEN = process.env.GAS_TOKEN || payload.gasToken || payload.token || 'milada2026';
   try{
     const body={...(payload||{}),action,token:GAS_TOKEN};

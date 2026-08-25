@@ -18,7 +18,7 @@ window.YC_CONFIG = {
     GAS_URL: '/_api/gas',
 
     // ── الرابط المباشر لـ Google Apps Script ──
-    DIRECT_GAS_URL: 'https://script.google.com/macros/s/AKfycbyJawD3RVxXF4sWio0oUPaaJHOJO3YW5ZSQdc3q634ENMYkhedYVAMSUW13B_cvCIMK/exec',
+    DIRECT_GAS_URL: 'https://script.google.com/macros/s/AKfycby-1B6wiO4-jbK5jaXRBKmUr8OmOKzG9O9ESohlPm5bviDufCkNg3QTL1EFQ_WWEwuPTA/exec',
 
     // ── مفتاح الأمان الافتراضي ──
     DEFAULT_GAS_TOKEN: 'milada2026',
